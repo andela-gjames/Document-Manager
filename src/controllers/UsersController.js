@@ -16,7 +16,7 @@ module.exports.store = function(req, res){
   user.name.last = req.body.lastName;
   var date = new Date();
   user.dates.created = date;
-  users.dates.updated = date;
+  user.dates.updated = date;
 
   user.save(function(err, user){
     if(err) res.send(err);
