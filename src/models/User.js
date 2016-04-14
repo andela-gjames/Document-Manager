@@ -1,6 +1,7 @@
 var mongoose = require("mongoose"),
     Schema = mongoose.Schema,
-    bcrypt = require('bcrypt-nodejs');
+    bcrypt = require('bcrypt-nodejs'),
+    jwt = require('jsonwebtoken');
 
 var userSchema = new Schema({
   name :{
@@ -14,6 +15,28 @@ var userSchema = new Schema({
     updated: {type: Date}
   }
 });
+
+userSchema.statics.validateUser = function(email, password, callback){
+  this.model('User').findOne({'email':email}, function(err, user){
+    if(user == null){
+      return  callback(err, false, null);
+    }
+    else{
+      bcrypt.compare(password, user.password, function(err, result){
+          console.log(user.password);
+          return callback(null, result, user);
+      });
+    }
+  });
+};
+
+userSchema.statics.generateToken = function(payload, callback){
+  var err = null;
+  if(typeof payload !== 'object'){
+      err = new Error("Invalid payload");
+  }
+  callback(err, jwt.sign(payload, process.env.SECRET_KEY, {expiresIn:3600*3}));
+};
 
 userSchema.pre('save', function(next){
   var user  = this;
