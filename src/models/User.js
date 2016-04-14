@@ -10,6 +10,7 @@ var userSchema = new Schema({
     first:{type:String, required: true},
     last: {type:String, required:true}
   },
+  username: {type:String, required:true, index:true, unique:true},
   email: {type: String, required: true, unique: true, match: /\S+@\S+\.\S+/},
   password: {type: String, required: true},
   dates: {
@@ -20,8 +21,8 @@ var userSchema = new Schema({
 
 
 //Validate user during login
-userSchema.statics.validateUser = function(email, password, callback){
-  this.model('User').findOne({'email':email}, function(err, user){
+userSchema.statics.validateUser = function(username, password, callback){
+  this.model('User').findOne({'username':username}, function(err, user){
     if(user == null){
       return  callback(err, false, null);
     }
@@ -33,7 +34,6 @@ userSchema.statics.validateUser = function(email, password, callback){
     }
   });
 };
-
 
 //Generate jwt token for verified users
 userSchema.statics.generateToken = function(payload, callback){

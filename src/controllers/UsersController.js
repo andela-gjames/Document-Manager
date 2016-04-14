@@ -1,94 +1,122 @@
-var User = require("../models/User"),
-    events = require('events'),
-    EventEmitter = events.EventEmitter
-    moment = require('moment')
-    UserHelper = require('../helpers/UserHelper');
+var User = require('../models/User')
+var moment = require('moment')
+var UserHelper = require('../helpers/UserHelper')
+var handleError = require('../helpers/ErrorsHelper').handleError
 
-
-//Index controller method
-module.exports.index = function(req, res){
-  res.setHeader("Content-Type", "application/json");
-  UserHelper.verifyToken(req.get('token'), function(err, decoded, msg){
-    if(err){
-      res.statusCode = msg.statusCode;
-      res.send({status:'Error', message: msg.message}).json();
-    }else{
-      res.send({status:'Success', message: 'Token decoded', user: decoded}).json();
-    }
-  });
+// Index controller method
+module.exports.index = function(req, res) {
+    UserHelper.verifyToken(req.get('token'), function(err, decoded, msg) {
+        if (err) {
+            res.statusCode = msg.statusCode;
+            res.send({
+                status: 'Error',
+                message: msg.message
+            }).json()
+        } else {
+            res.send({
+                status: 'Success',
+                message: 'Token decoded',
+                user: decoded
+            }).json()
+        }
+    });
 }
 
 
 //Controller to login registered users
-module.exports.login = function(req, res){
+module.exports.login = function(req, res) {
 
-  User.validateUser(req.body.email, req.body.password, function(err, isValid, user){
-    res.setHeader("Content-Type", "application/json");
-    var msg = {};
-    if (err) {
-      msg.statusCode = 400;
-      msg.status = "Error";
-      msg.message = "An error has occured";
-
-      res.statusCode = msg.statusCode;
-      res.send(JSON.stringify(msg)).json();
-    } else {
-      if (isValid){
-        msg.statusCode = 200;
-        msg.status = "Success";
-        msg.message = "Logged in";
-        User.generateToken({
-          email:user.email,
-          firstName : user.name.first,
-          lastName : user.name.last,
-          dates :{
-            created: moment(user.dates.created).format("MM Do YYYY"),
-            updated: moment(user.dates.updated.toString()).fromNow()
-          }
-        }, function(err, token){
-
-          if(err) return err;
-          msg.token = token;
-          res.statusCode = msg.statusCode;
-          res.send(JSON.stringify(msg)).json();
-        });
-      } else {
-        msg.statusCode  = 401;
-        msg.status = "Failure";
-        msg.message = "Invalid username or password";
-
-        res.statusCode = msg.statusCode;
-        res.send(JSON.stringify(msg)).json();
-      }
-    }
-  });
+    User.validateUser(req.body.username, req.body.password, function(err, isValid, user) {
+        res.setHeader("Content-Type", "application/json");
+        var msg = {};
+        handleError(err, res);
+        if (isValid) {
+            User.generateToken({
+                username: user.username,
+                email: user.email,
+                firstName: user.name.first,
+                lastName: user.name.last,
+                dates: {
+                    created: moment(user.dates.created).format("MM Do YYYY"),
+                    updated: moment(user.dates.updated).fromNow()
+                }
+            }, function(err, token) {
+                handleError(err, res);
+                return res.status(200).json({
+                    token: token
+                });
+            });
+        } else {
+            res.status(401).json({
+                message: 'Invalid username or password'
+            });
+        }
+    });
 }
 
 
 //Controller to store new users
-module.exports.store = function(req, res){
-  res.setHeader("Content-Type", "application/json");
+module.exports.store = function(req, res) {
+    res.setHeader("Content-Type", "application/json");
 
-  var user = new User;
-  user.email = req.body.email;
-  user.password = req.body.password;
-  user.name.first = req.body.firstName;
-  user.name.last = req.body.lastName;
-  var date = new Date();
-  user.dates.created = date;
-  user.dates.updated = date;
+    var user = new User;
+    user.username = req.body.username;
+    user.email = req.body.email;
+    user.password = req.body.password;
+    user.name.first = req.body.firstName;
+    user.name.last = req.body.lastName;
+    var date = new Date();
+    user.dates.created = date;
+    user.dates.updated = date;
 
-  user.save(function(err, user){
-    if(err) res.send(err);
-    res.send(JSON.stringify(user));
-  });
+    user.save(function(err, user) {
+        handleError(err, res);
+        res.send(JSON.stringify(user));
+    });
 }
 
+//Update user
+module.exports.update = function(req, res) {
+    res.setHeader('Content-Type', 'application/json');
 
-module.exports.update = function(req, res){
-
+    var condition = {
+        username: req.params.username
+    };
+    var fields = {
+        $set: req.body
+    }
+    User.findOneAndUpdate(condition, fields, {
+        new: true
+    }, function(err, user) {
+        handleError(err, res);
+        if (user === null) {
+            return res.status(404).json({
+                message: "user not found"
+            });
+        }
+        res.status(200).json({
+            message: "user updated",
+            user: user
+        });
+    });
 }
 
-module.exports.destroy = function(req, res){
+//Delete a user
+module.exports.destroy = function(req, res) {
+    var condition = {
+        username: req.params.username
+    };
 
+    User.findOneAndRemove(condition, function(err, user, result) {
+        handleError(err, res);
+
+        if (user === null) {
+            return res.status(404).json({
+                message: " user not found"
+            });
+        }
+        res.status(200).json({
+            message: user.username + " has been deleted"
+        });
+    });
 }

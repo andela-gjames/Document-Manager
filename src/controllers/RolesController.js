@@ -1,5 +1,5 @@
 var Role = require('../models/Role'),
-    errorsHelper = require('../helpers/ErrorsHelper').ErrorsHelper;
+    handleError = require('../helpers/ErrorsHelper').handleError;
 
 
 module.exports.index = function(req, res){
@@ -15,11 +15,7 @@ module.exports.store = function(req, res){
     res.setHeader('Content-Type', 'appication/json')
     var msg = {};
     if(err){
-      console.log(errorsHelper.getMessage(err));
-      msg.statusCode = 500;
-      msg.status = 'Error';
-      errorMsg = errorsHelper.getMessage(err);
-      msg.message  = errorMsg !== null ? errorMsg :"There was an error try again";
+      handleError(err);
     }
     else {
       msg.statusCode = 200;

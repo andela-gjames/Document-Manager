@@ -1,17 +1,15 @@
-var ErrorsHelper = function(){
-
+module.exports.handleError = function(err, resp) {
+    if (err) {
+        var msg = null
+        var statusCode = 500;
+        switch (errorObj.code) {
+            case 11000:
+                statusCode = 409;
+                msg = "The value already exist"
+                break;
+            default:
+                msg = "server error";
+        }
+        return res.status(statusCode).json(msg);
+    }
 }
-
-ErrorsHelper.getMessage = function(errorObj){
-  var msg = null
-  switch (errorObj.code) {
-    case 11000:
-      msg = "The value already exist"
-      break;
-  }
-
-
-  return msg;
-}
-
-module.exports.ErrorsHelper = ErrorsHelper;
