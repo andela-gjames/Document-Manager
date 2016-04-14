@@ -3,6 +3,8 @@ var mongoose = require("mongoose"),
     bcrypt = require('bcrypt-nodejs'),
     jwt = require('jsonwebtoken');
 
+
+//Define use data structure
 var userSchema = new Schema({
   name :{
     first:{type:String, required: true},
@@ -16,6 +18,8 @@ var userSchema = new Schema({
   }
 });
 
+
+//Validate user during login
 userSchema.statics.validateUser = function(email, password, callback){
   this.model('User').findOne({'email':email}, function(err, user){
     if(user == null){
@@ -30,6 +34,8 @@ userSchema.statics.validateUser = function(email, password, callback){
   });
 };
 
+
+//Generate jwt token for verified users
 userSchema.statics.generateToken = function(payload, callback){
   var err = null;
   if(typeof payload !== 'object'){
@@ -38,6 +44,8 @@ userSchema.statics.generateToken = function(payload, callback){
   callback(err, jwt.sign(payload, process.env.SECRET_KEY, {expiresIn:3600*3}));
 };
 
+
+//Hash password before saving the user to the database
 userSchema.pre('save', function(next){
   var user  = this;
   bcrypt.genSalt(20, function(err, salt){

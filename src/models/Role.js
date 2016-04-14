@@ -1,9 +1,8 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
-roles = ["editor","owner", "viewer"];
 
 var roleSchema = new Schema({
-  role:{type:String, enum:roles}
+  title:{type:String, index:true, unique: true, required:true, lowercase:true}
 });
 
 module.exports = mongoose.model("Role", roleSchema);
