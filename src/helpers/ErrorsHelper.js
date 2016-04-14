@@ -1,8 +1,8 @@
-module.exports.handleError = function(err, resp) {
+module.exports.handleError = function(err, res) {
     if (err) {
         var msg = null
         var statusCode = 500;
-        switch (errorObj.code) {
+        switch (err.code) {
             case 11000:
                 statusCode = 409;
                 msg = "The value already exist"
@@ -10,6 +10,10 @@ module.exports.handleError = function(err, resp) {
             default:
                 msg = "server error";
         }
-        return res.status(statusCode).json(msg);
+        if(err.name='JsonWebTokenError'){
+            statusCode = 403;
+            msg = err.message;
+        }
+        return res.status(statusCode).json({message:msg});
     }
 }

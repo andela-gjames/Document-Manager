@@ -28,7 +28,6 @@ userSchema.statics.validateUser = function(username, password, callback){
     }
     else{
       bcrypt.compare(password, user.password, function(err, result){
-          console.log(user.password);
           return callback(null, result, user);
       });
     }
