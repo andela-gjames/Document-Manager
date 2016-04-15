@@ -6,19 +6,13 @@ var handleError = require('../helpers/ErrorsHelper').handleError
 // Index controller method
 module.exports.index = function(req, res) {
     UserHelper.verifyToken(req.get('token'), function(err, decoded, msg) {
-        if (err) {
-            res.statusCode = msg.statusCode;
-            res.send({
-                status: 'Error',
-                message: msg.message
-            }).json()
-        } else {
-            res.send({
-                status: 'Success',
-                message: 'Token decoded',
-                user: decoded
-            }).json()
-        }
+        if(err) return handleError(err, res);
+
+        res.send({
+            status: 'Success',
+            message: 'Token decoded',
+            user: decoded
+        }).json()
     });
 }
 
@@ -27,11 +21,11 @@ module.exports.index = function(req, res) {
 module.exports.login = function(req, res) {
 
     User.validateUser(req.body.username, req.body.password, function(err, isValid, user) {
-        res.setHeader("Content-Type", "application/json");
-        var msg = {};
-        handleError(err, res);
+        if(err) return handleError(err, res);
+
         if (isValid) {
             User.generateToken({
+                _id: user._id,
                 username: user.username,
                 email: user.email,
                 firstName: user.name.first,
@@ -41,15 +35,14 @@ module.exports.login = function(req, res) {
                     updated: moment(user.dates.updated).fromNow()
                 }
             }, function(err, token) {
-                handleError(err, res);
-                return res.status(200).json({
-                    token: token
-                });
+                if(err) return handleError(err, res);
+
+                return res.status(200).json({ token: token});
             });
-        } else {
-            res.status(401).json({
-                message: 'Invalid username or password'
-            });
+        }
+        else
+        {
+            res.status(401).json({message: 'Invalid username or password'});
         }
     });
 }
@@ -70,36 +63,28 @@ module.exports.store = function(req, res) {
     user.dates.updated = date;
 
     user.save(function(err, user) {
-        handleError(err, res);
+        if(err) return handleError(err, res);
+
         res.send(JSON.stringify(user));
     });
 }
 
+
 //Update user
 module.exports.update = function(req, res) {
-    res.setHeader('Content-Type', 'application/json');
 
-    var condition = {
-        username: req.params.username
-    };
-    var fields = {
-        $set: req.body
-    }
-    User.findOneAndUpdate(condition, fields, {
-        new: true
-    }, function(err, user) {
-        handleError(err, res);
+    var condition = { username: req.params.username };
+    var fields = { $set: req.body };
+    User.findOneAndUpdate(condition, fields, { new: true}, function(err, user) {
+        if(err) return handleError(err, res);
+
         if (user === null) {
-            return res.status(404).json({
-                message: "user not found"
-            });
+            return res.status(404).json({ message: "user not found"});
         }
-        res.status(200).json({
-            message: "user updated",
-            user: user
-        });
+        res.status(200).json({message: "user updated", user: user});
     });
 }
+
 
 //Delete a user
 module.exports.destroy = function(req, res) {
@@ -108,15 +93,12 @@ module.exports.destroy = function(req, res) {
     };
 
     User.findOneAndRemove(condition, function(err, user, result) {
-        handleError(err, res);
+        if(err) return handleError(err, res);
 
         if (user === null) {
-            return res.status(404).json({
-                message: " user not found"
-            });
+            return res.status(404).json({ message: " user not found"});
         }
-        res.status(200).json({
-            message: user.username + " has been deleted"
-        });
+
+        res.status(200).json({message: user.username + " has been deleted"});
     });
 }

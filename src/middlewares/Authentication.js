@@ -12,12 +12,7 @@ module.exports.isAuthenticated = function(req, res, next){
 
     jwt.verify(token, process.env.SECRET_KEY, function(err, decoded){
         handleError(err, res);
-        req.body.jwt_user = JSON.stringify(decoded);
+        req.body.jwt_user = decoded;
         next();
     });
-}
-
-module.exports.isOwner = function(req, res, next){
-    // User.findOne({username:});
-    next();
 }

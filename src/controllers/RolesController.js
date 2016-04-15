@@ -11,89 +11,37 @@ module.exports.store = function(req, res){
   var role = new Role();
   role.title = req.body.title;
   role.save(function(err, role){
-
-    res.setHeader('Content-Type', 'appication/json')
-    var msg = {};
-    if(err){
-      handleError(err);
-    }
-    else {
-      msg.statusCode = 200;
-      msg.status = 'Success';
-      msg.message = 'Role created';
-    }
-    res.statusCode = msg.statusCode;
-    res.send(JSON.stringify(msg)).json();
+    if(err) return handleError(err, res);
+    res.status(200).json({message: 'success'});
   });
 }
-
 
 module.exports.update = function(req, res){
   Role.update({title:req.params.title},
                     {$set:req.body}, function(err, status)
   {
-      var msg = {};
       if(status.nModified == 0)
       {
-        msg.statusCode = 404;
-        msg.status = "Failure";
-        msg.message = "Error updating, check your fields";
-      } else {
-        msg.statusCode = 200;
-        msg.status = "success";
-        msg.message = "update complete";
+        return res.status(404).json({ message: "Error updating, check your field"});
       }
-      res.statusCode = msg.statusCode;
-      res.setHeader('Content-Type', 'application/json');
-      res.send(JSON.stringify(msg)).json();
+
+      res.status(200).json({message:"success"});
   });
 }
 
-
 module.exports.destroy = function(req, res){
   Role.findOne({title: req.params.title}, function(err, role){
-    var msg = {};
 
-    if(err){
-      msg.statusCode = 500;
-      msg.status = "Error";
-      msg.message = "An error has occured";
-
-      res.statusCode = msg.statusCode;
-      res.setHeader('Content-Type', 'application/json');
-      res.send(JSON.stringify(msg)).json();
-    }
-
+    if(err) return handleError(err, res);
 
     if(role != null){
       Role.remove({title: role.title}, function(err){
+          if(err) return handleError(err, res);
 
-        if(err)
-        {
-          msg.statusCode = 500;
-          msg.status = "Error";
-          msg.message = "An error has occured";
-        } else {
-          msg.statusCode = 200;
-          msg.status = "success";
-          msg.message = "Delete successful";
-        }
-
-        res.statusCode = msg.statusCode;
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(msg)).json();
+          return res.status(200).json({message: 'item deleted'});
       });
     }
-    else {
-      msg.statusCode = 404;
-      msg.status = "Failure";
-      msg.message = "Not found";
 
-      res.statusCode = msg.statusCode;
-      res.setHeader('Content-Type', 'application/json');
-      res.send(JSON.stringify(msg)).json();
-    }
-
-
+    return res.status(404).json({message: 'Not found'});
   });
 }
