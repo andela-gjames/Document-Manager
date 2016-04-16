@@ -13,6 +13,7 @@ var userSchema = new Schema({
   username: {type:String, required:true, index:true, unique:true},
   email: {type: String, required: true, unique: true, match: /\S+@\S+\.\S+/},
   password: {type: String, required: true},
+  role: [{type: Schema.Types.ObjectId, ref: 'Role'}],
   dates: {
     created:{type:Date, required:true},
     updated: {type: Date}
@@ -53,4 +54,11 @@ userSchema.pre('save', function(next){
     next()
   });
 });
+
+userSchema.methods.toJSON = function() {
+  var obj = this.toObject()
+  delete obj.password
+  return obj
+}
+
 module.exports = mongoose.model("User", userSchema);

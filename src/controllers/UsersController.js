@@ -1,19 +1,28 @@
 var User = require('../models/User')
 var moment = require('moment')
 var UserHelper = require('../helpers/UserHelper')
+var url = require('url')
 var handleError = require('../helpers/ErrorsHelper').handleError
 
 // Index controller method
 module.exports.index = function(req, res) {
-    UserHelper.verifyToken(req.get('token'), function(err, decoded, msg) {
+    var queryString = url.parse(req.url, true).query;
+
+    var query = User.find({});
+
+    if(queryString.q != undefined && queryString.limit != undefined){
+
+        var start = Math.abs(parseInt(queryString.q)) < 0  ? 0 : parseInt(queryString.q);
+        var limit = parseInt(queryString.limit) ;
+        query.skip(start).limit(limit);
+    }
+
+    query.exec(function(err, users){
         if(err) return handleError(err, res);
 
-        res.send({
-            status: 'Success',
-            message: 'Token decoded',
-            user: decoded
-        }).json()
+        res.status(200).json(users);
     });
+
 }
 
 

@@ -3,7 +3,10 @@ var Role = require('../models/Role'),
 
 
 module.exports.index = function(req, res){
-  res.send("working");
+  Role.find({}, function(err, roles){
+      if(err) return handleError(err, res);
+      res.status(200).json(roles);
+  })
 }
 
 

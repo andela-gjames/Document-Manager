@@ -10,7 +10,7 @@ var routes = express.Router();
 
 module.exports.api = function() {
     //Users CRUD
-    routes.get('/users', [AuthMiddleware.isAuthenticated], UsersController.index);
+    routes.get('/users', UsersController.index);
     routes.post('/user/', UsersController.store);
     routes.post('/user/login', UsersController.login);
     routes.put('/user/:username/', [AuthMiddleware.isAuthenticated], UsersController.update);
@@ -22,6 +22,8 @@ module.exports.api = function() {
         ],
     UsersController.destroy);
 
+
+
     //Roles CRUD
     routes.get('/roles/', RolesController.index);
     routes.post('/role/', RolesController.store);
@@ -31,6 +33,7 @@ module.exports.api = function() {
             AuthMiddleware.isAuthenticated
         ],
         RolesController.destroy);
+
 
     //Documents CRUD
     routes.get('/documents', DocumentsController.index);

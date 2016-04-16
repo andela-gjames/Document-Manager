@@ -9,10 +9,11 @@ module.exports.createDocObj = function(req, res, next){
     }
     Role.findOne({title: req.body.role}, function(err, role){
         if(err) return handleError(err, res);
-
+        if(role == null){
+            return res.status(400).json({message: 'role does not exist'});
+        }
         var document = {}
         var date = new Date();
-        console.log(req.body.jwt_user.firstName);
         document.ownerId = req.body.jwt_user._id;
         document.title = req.body.title;
         document.role = role._id;
