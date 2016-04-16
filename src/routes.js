@@ -12,6 +12,8 @@ module.exports.api = function() {
     //Users CRUD
     routes.get('/users', UsersController.index);
     routes.post('/user/', UsersController.store);
+    routes.get('/user/:username', UsersController.show);
+    routes.get('/user/:username/documents', UsersController.documents);
     routes.post('/user/login', UsersController.login);
     routes.put('/user/:username/', [AuthMiddleware.isAuthenticated], UsersController.update);
     routes.delete('/user/:username/',
@@ -37,6 +39,8 @@ module.exports.api = function() {
 
     //Documents CRUD
     routes.get('/documents', DocumentsController.index);
+    routes.get('/documents/:role', DocumentsController.role);
+    routes.get('/document/:slug', DocumentsController.show);
     routes.post('/document',
         [
             AuthMiddleware.isAuthenticated,

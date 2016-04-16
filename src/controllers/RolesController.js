@@ -1,7 +1,7 @@
 var Role = require('../models/Role'),
     handleError = require('../helpers/ErrorsHelper').handleError;
 
-
+//Get all roles
 module.exports.index = function(req, res){
   Role.find({}, function(err, roles){
       if(err) return handleError(err, res);
@@ -9,7 +9,7 @@ module.exports.index = function(req, res){
   })
 }
 
-
+//Store a new role
 module.exports.store = function(req, res){
   var role = new Role();
   role.title = req.body.title;
@@ -19,6 +19,7 @@ module.exports.store = function(req, res){
   });
 }
 
+//Update a role
 module.exports.update = function(req, res){
   Role.update({title:req.params.title},
                     {$set:req.body}, function(err, status)
@@ -32,6 +33,7 @@ module.exports.update = function(req, res){
   });
 }
 
+//Delete a role
 module.exports.destroy = function(req, res){
   Role.findOne({title: req.params.title}, function(err, role){
 

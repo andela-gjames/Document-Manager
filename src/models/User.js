@@ -10,7 +10,7 @@ var userSchema = new Schema({
     first:{type:String, required: true},
     last: {type:String, required:true}
   },
-  username: {type:String, required:true, index:true, unique:true},
+  username: {type:String, required:true, index:true, unique:true, lowercase:true},
   email: {type: String, required: true, unique: true, match: /\S+@\S+\.\S+/},
   password: {type: String, required: true},
   role: [{type: Schema.Types.ObjectId, ref: 'Role'}],
@@ -44,7 +44,6 @@ userSchema.statics.generateToken = function(payload, callback){
   callback(err, jwt.sign(payload, process.env.SECRET_KEY, {expiresIn:3600*3}));
 };
 
-
 //Hash password before saving the user to the database
 userSchema.pre('save', function(next){
   var user  = this;
@@ -55,10 +54,12 @@ userSchema.pre('save', function(next){
   });
 });
 
+//Modify returned data
 userSchema.methods.toJSON = function() {
   var obj = this.toObject()
   delete obj.password
   return obj
 }
 
+//Export Model
 module.exports = mongoose.model("User", userSchema);

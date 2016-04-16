@@ -1,7 +1,9 @@
 var Document = require('../models/Document')
+var Role = require('../models/Role')
 var handleError = require('../helpers/ErrorsHelper').handleError
 var moment = require('moment');
 
+//Get all documents
 module.exports.index = function(req, res){
     //Get all and populate
     var query = Document.find({}).populate({
@@ -13,7 +15,7 @@ module.exports.index = function(req, res){
     });
 
     //Limit search result by range
-    var start = Math.abs(parseInt(req.query.q)) < 0  ? 0 : parseInt(req.query.q);
+    var start = Math.abs(parseInt(req.query.start)) < 0  ? 0 : parseInt(req.query.start);
     var limit = parseInt(req.query.limit) ;
     query.skip(start).limit(limit);
 
@@ -46,11 +48,45 @@ module.exports.index = function(req, res){
     });
 }
 
+//Get a document by slug
+module.exports.show = function(req, res){
+    Document.findOne({slug:req.params.slug}, function(err, document){
+        if(err)
+            return handleError(err, res);
+
+        if(document == null)
+            return res.status(404).json({message:"Document not found"});
+
+        res.status(200).json({document});
+    });
+}
+//Get all documents in role
+module.exports.role = function(req, res){
+    Role.findOne({title: req.params.role}, function(err, role){
+        if(err)
+            return handleError(err, res);
+
+        if(role == null)
+            return res.status(404).json({message:"Role not found"});
+
+        Document.find({role:role._id}).populate("role").exec(function(err, document){
+            if(err)
+                return handleError(err, res);
+
+            if(document == null)
+                return res.status(404).json({message:"No documents in role"});
+
+            return res.status(200).json(document);
+        });
+    });
+}
+
 //Creates a new Document
 module.exports.store = function(req, res){
     Document.create(req.body.document, function(err, document){
-        // console.log(err);
-        if(err) return handleError(err, res);
+        if(err)
+            return handleError(err, res);
+            
         if(document){
             return res.status(200).json({message:"document created"});
         } else {
@@ -70,7 +106,7 @@ module.exports.update = function(req, res){
     });
 }
 
-
+//Deletes a document
 module.exports.destroy = function(req, res){
     var condition = {slug: req.params.slug};
     Document.remove(condition, function(err, document){

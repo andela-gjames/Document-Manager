@@ -1,4 +1,5 @@
 var User = require('../models/User')
+var Document = require('../models/Document')
 var moment = require('moment')
 var UserHelper = require('../helpers/UserHelper')
 var url = require('url')
@@ -86,7 +87,6 @@ module.exports.update = function(req, res) {
     var fields = { $set: req.body };
     User.findOneAndUpdate(condition, fields, { new: true}, function(err, user) {
         if(err) return handleError(err, res);
-
         if (user === null) {
             return res.status(404).json({ message: "user not found"});
         }
@@ -109,5 +109,41 @@ module.exports.destroy = function(req, res) {
         }
 
         res.status(200).json({message: user.username + " has been deleted"});
+    });
+}
+
+
+//Show user
+module.exports.show = function(req, res){
+    User.findOne({username:req.params.username}, function(err, user){
+        if(err) return handleError(err, res);
+
+        if(user == null)
+            return res.status(404).json({message:"User does not exist"})
+
+        return res.status(200).json(user);
+    });
+}
+
+
+//Get users documents
+module.exports.documents = function(req, res){
+    User.findOne({username: req.params.username}, function(err, user){
+        if(err)
+            return handleError(err, res);
+
+        if(user == null)
+            return res.status(404).json({message: "User not found"});
+
+        Document.find({ownerId: user._id}, function(err, documents){
+            if(err)
+                return handleError(err, res);
+
+            if(documents == null)
+                return res.status(200).json({message: "User has no documents"});
+
+            return res.status(200).json(documents);
+        })
+
     });
 }
