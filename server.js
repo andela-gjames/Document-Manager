@@ -8,7 +8,7 @@ var express = require('express'),
 var app = express();
 
 //Connect to databse
-mongoose.connect("mongodb://localhost/doc_manager_api");
+mongoose.connect("mongodb://localhost/"+process.env.DB_NAME);
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -24,3 +24,6 @@ app.use('/api', routes.api());
 app.listen(process.env.PORT, function(){
   console.log("Application running at " + process.env.PORT);
 })
+
+module.exports = app;
+module.exports.mongoose = mongoose;

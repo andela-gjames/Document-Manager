@@ -1,5 +1,6 @@
 module.exports.handleError = function(err, res) {
     if (err) {
+        console.log(err);
         var msg = null
         var statusCode = 500;
         switch (err.code) {

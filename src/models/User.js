@@ -1,18 +1,19 @@
 var mongoose = require("mongoose"),
     Schema = mongoose.Schema,
     bcrypt = require('bcrypt-nodejs'),
-    jwt = require('jsonwebtoken');
+    jwt = require('jsonwebtoken'),
+    uniqueValidator = require('mongoose-unique-validator');
 
 
 //Define use data structure
 var userSchema = new Schema({
   name :{
-    first:{type:String, required: true},
-    last: {type:String, required:true}
+    first:{type:String, required: [true, 'first name is required']},
+    last: {type:String, required: [true, 'last name is required']}
   },
-  username: {type:String, required:true, index:true, unique:true, lowercase:true},
-  email: {type: String, required: true, unique: true, match: /\S+@\S+\.\S+/},
-  password: {type: String, required: true},
+  username: {type:String, required:[true, 'username is required'], index:true, unique:[true, 'username already exist'], lowercase:true},
+  email: {type: String, required: [true, 'email is required'], unique: [true, 'email already exist'], match: /\S+@\S+\.\S+/},
+  password: {type: String, required: [true, 'password is required']},
   role: [{type: Schema.Types.ObjectId, ref: 'Role'}],
   dates: {
     created:{type:Date, required:true},
@@ -62,4 +63,5 @@ userSchema.methods.toJSON = function() {
 }
 
 //Export Model
+// userSchema.plugin(uniqueValidator, {message: 'This {PATH} already exists'});
 module.exports = mongoose.model("User", userSchema);

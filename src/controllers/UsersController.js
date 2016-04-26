@@ -60,7 +60,6 @@ module.exports.login = function(req, res) {
 
 //Controller to store new users
 module.exports.store = function(req, res) {
-    res.setHeader("Content-Type", "application/json");
 
     var user = new User;
     user.username = req.body.username;
@@ -75,7 +74,7 @@ module.exports.store = function(req, res) {
     user.save(function(err, user) {
         if(err) return handleError(err, res);
 
-        res.send(JSON.stringify(user));
+        res.status(200).json(user);
     });
 }
 
